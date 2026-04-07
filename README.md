@@ -119,6 +119,6 @@ Reward details: see `email_env/graders.py`.
 
 | Task | Model | Score | Notes |
 | --- | --- | --- | --- |
-| priority | Qwen/Qwen2.5-72B-Instruct | 1.00 | 1 step; success=true |
+| priority | Qwen/Qwen2.5-72B-Instruct | 0.99 | 1 step; success=true |
 | full_triage | Qwen/Qwen2.5-72B-Instruct | 0.90 | 1 step; success=true |
 | inbox | Qwen/Qwen2.5-72B-Instruct | 0.6732 | 8 steps; success=true |

@@ -78,6 +78,11 @@ def _format_step_error(error: Optional[str]) -> str:
     return error.replace("\n", " ").replace("\r", " ")
 
 
+def _bounded_for_logs(value: float) -> float:
+    """Keep logged numeric values strictly within (0, 1)."""
+    return min(max(value, SCORE_MIN), SCORE_MAX)
+
+
 def log_step(
     step: int,
     action: Any,
@@ -91,15 +96,16 @@ def log_step(
         action_str = str(action).replace("\n", " ")
     err_out = _format_step_error(error)
     done_val = str(done).lower()
+    reward_for_logs = _bounded_for_logs(reward)
     print(
-        f"[STEP] step={step} action={action_str} reward={reward:.2f} "
+        f"[STEP] step={step} action={action_str} reward={reward_for_logs:.2f} "
         f"done={done_val} error={err_out}",
         flush=True,
     )
 
 
 def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> None:
-    rewards_str = ",".join(f"{r:.2f}" for r in rewards)
+    rewards_str = ",".join(f"{_bounded_for_logs(r):.2f}" for r in rewards)
     print(
         f"[END] success={str(success).lower()} steps={steps} "
         f"score={score:.2f} rewards={rewards_str}",
