@@ -37,6 +37,8 @@ TASKS = [
 ]
 
 TEMPERATURE = 0.1
+SCORE_MIN = 0.01
+SCORE_MAX = 0.99
 
 SYSTEM_PROMPT = """
 You are an expert email triage specialist. You will be given email content and must classify it.
@@ -228,7 +230,8 @@ def run_task(client: OpenAI, env: EmailTriageEnv, task_cfg: dict) -> float:
         else:
             score = sum(rewards) / len(rewards) if rewards else 0.0
 
-        score = min(max(score, 0.0), 1.0)
+        # Keep task score strictly inside (0, 1) and stable under 2-decimal logging.
+        score = min(max(score, SCORE_MIN), SCORE_MAX)
         success = score >= threshold
         return score
 

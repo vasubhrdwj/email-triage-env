@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from email_env.emails import Email
 
 PRIORITY_ORDER = ["urgent", "high", "medium", "low"]
+STRICT_EPSILON = 1e-4
 
 CATEGORY_ROUTE_MAP: dict[str, list[str]] = {
     "billing": ["billing_team"],
@@ -72,6 +73,13 @@ def _apply_step_penalty(attempt: int) -> float:
     return -0.05 * max(0, attempt - 1)
 
 
+def _strict_unit_interval(value: float) -> float:
+    """
+    Keep values strictly inside (0, 1) to satisfy submission checks.
+    """
+    return max(STRICT_EPSILON, min(1.0 - STRICT_EPSILON, value))
+
+
 def compute_reward(
     action: EmailTriageAction,
     true_email: Email,
@@ -105,7 +113,7 @@ def compute_reward(
             ordering_score = score_ordering(agent_order, true_order)
         base_total = priority_score + category_score + route_score + ordering_score
 
-    total = round(max(0.0, min(1.0, base_total + step_penalty)), 4)
+    total = round(_strict_unit_interval(base_total + step_penalty), 4)
 
     return EmailTriageReward(
         priority_score=priority_score,
@@ -120,9 +128,9 @@ def compute_reward(
 def compute_episode_score(per_email_totals: list[float], ordering_score: float) -> float:
     """Task 3: mean triage totals plus ordering bonus (ordering applied once)."""
     if not per_email_totals:
-        return 0.0
+        return float(STRICT_EPSILON)
     base = float(sum(per_email_totals)) / len(per_email_totals)
-    return float(min(1.0, base + float(ordering_score)))
+    return float(_strict_unit_interval(base + float(ordering_score)))
 
 
 def generate_feedback(
